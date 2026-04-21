@@ -6,21 +6,20 @@
 
 <style>
 body {
-    font-family: Arial;
-    background: #f4f6f9;
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg, #667eea, #764ba2);
     text-align: center;
+    color: white;
 }
 
 .container {
     background: white;
-    width: 400px;
+    color: black;
+    width: 420px;
     margin: 50px auto;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-h2 {
-    margin-bottom: 10px;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .stars span {
@@ -43,11 +42,11 @@ textarea {
 button {
     margin-top: 10px;
     padding: 10px;
-    background: #007BFF;
-    color: white;
+    background: linear-gradient(45deg, #ff7e5f, #feb47b);
     border: none;
+    color: white;
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 5px;
 }
 
 .review {
@@ -76,17 +75,20 @@ button {
     <br>
     <button onclick="addReview()">Envoyer</button>
 
+    <h3>Moyenne : <span id="average">0</span> ⭐</h3>
+
     <h3>Avis des clients</h3>
     <div id="reviews"></div>
 
-    <h3>Scanner le QR code</h3>
-    <img id="qrcode" src="" alt="QR Code">
+    <h3>Scanner QR code</h3>
+    <img id="qrcode">
 </div>
 
 <script>
 let rating = 0;
+let reviews = JSON.parse(localStorage.getItem("reviews")) || [];
 
-// Gestion des étoiles
+// étoiles
 document.querySelectorAll("#stars span").forEach(star => {
     star.addEventListener("click", function() {
         rating = this.getAttribute("data-value");
@@ -97,32 +99,58 @@ document.querySelectorAll("#stars span").forEach(star => {
     });
 });
 
-// Ajouter un avis
+// afficher avis
+function displayReviews() {
+    let container = document.getElementById("reviews");
+    container.innerHTML = "";
+
+    let total = 0;
+
+    reviews.forEach(r => {
+        let div = document.createElement("div");
+        div.className = "review";
+        div.innerHTML = "⭐".repeat(r.rating) + "<br>" + r.comment;
+        container.appendChild(div);
+
+        total += r.rating;
+    });
+
+    let avg = reviews.length ? (total / reviews.length).toFixed(1) : 0;
+    document.getElementById("average").innerText = avg;
+}
+
+// ajouter avis
 function addReview() {
     let comment = document.getElementById("comment").value;
 
     if (rating == 0 || comment === "") {
-        alert("Veuillez remplir tous les champs !");
+        alert("Remplissez tout !");
         return;
     }
 
-    let review = document.createElement("div");
-    review.className = "review";
-    review.innerHTML = "⭐".repeat(rating) + "<br>" + comment;
+    let review = {
+        rating: parseInt(rating),
+        comment: comment
+    };
 
-    document.getElementById("reviews").appendChild(review);
+    reviews.push(review);
+    localStorage.setItem("reviews", JSON.stringify(reviews));
 
     document.getElementById("comment").value = "";
     rating = 0;
     document.querySelectorAll("#stars span").forEach(s => s.classList.remove("active"));
+
+    displayReviews();
 }
 
-// Générer QR code automatiquement
+// QR code auto
 window.onload = function() {
+    displayReviews();
+
     let url = window.location.href;
     document.getElementById("qrcode").src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + url;
-}
+        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + url;
+};
 </script>
 
 </body>
