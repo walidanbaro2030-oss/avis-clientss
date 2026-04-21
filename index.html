@@ -2,82 +2,87 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Avis Clients</title>
+<title>Review System</title>
 
 <style>
 body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI';
     background: #0f172a;
+    margin: 0;
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
+    padding: 30px;
+    color: white;
 }
 
+/* container */
 .container {
-    background: #ffffff;
-    width: 450px;
-    padding: 25px;
+    background: white;
+    color: black;
+    width: 500px;
+    padding: 20px;
     border-radius: 15px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
 }
 
-h2 {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
+/* stars */
 .stars span {
-    font-size: 32px;
+    font-size: 30px;
     cursor: pointer;
     color: #ccc;
-    transition: 0.2s;
 }
 
-.stars span.active {
-    color: #fbbf24;
+.stars .active {
+    color: gold;
 }
 
+/* inputs */
 textarea {
     width: 100%;
-    height: 90px;
+    height: 80px;
     margin-top: 10px;
     padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    resize: none;
 }
 
 button {
     width: 100%;
+    padding: 10px;
     margin-top: 10px;
-    padding: 12px;
     background: #4f46e5;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
 }
 
-button:hover {
-    background: #4338ca;
-}
-
+/* review */
 .review {
     background: #f1f5f9;
+    padding: 10px;
     margin-top: 10px;
-    padding: 12px;
     border-radius: 10px;
-    border-left: 5px solid #4f46e5;
 }
 
-.moyenne {
+/* admin */
+.adminBox {
+    display: none;
+    margin-top: 20px;
+    background: #111827;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+}
+
+.card {
+    background: #1f2937;
+    padding: 10px;
+    width: 30%;
+    border-radius: 10px;
     text-align: center;
-    margin-top: 10px;
-    font-weight: bold;
 }
 </style>
 </head>
@@ -85,31 +90,64 @@ button:hover {
 <body>
 
 <div class="container">
+
     <h2>⭐ Avis Clients</h2>
 
-    <div class="stars" id="stars">
-        <span data-value="1">★</span>
-        <span data-value="2">★</span>
-        <span data-value="3">★</span>
-        <span data-value="4">★</span>
-        <span data-value="5">★</span>
+    <!-- CLIENT AREA -->
+    <div id="clientArea">
+
+        <div class="stars" id="stars">
+            <span data-value="1">★</span>
+            <span data-value="2">★</span>
+            <span data-value="3">★</span>
+            <span data-value="4">★</span>
+            <span data-value="5">★</span>
+        </div>
+
+        <textarea id="comment" placeholder="Votre avis..."></textarea>
+        <button onclick="addReview()">Envoyer</button>
+
+        <h3>Avis :</h3>
+        <div id="reviews"></div>
+
     </div>
 
-    <textarea id="comment" placeholder="Écrire votre avis..."></textarea>
-    <button onclick="addReview()">Envoyer</button>
-
-    <div class="moyenne">
-        Moyenne : <span id="average">0</span> ⭐
+    <!-- ADMIN LOGIN -->
+    <div id="login">
+        <h3>🔐 Admin Login</h3>
+        <input id="pass" type="password" placeholder="Mot de passe">
+        <button onclick="login()">Entrer Admin</button>
     </div>
 
-    <div id="reviews"></div>
+    <!-- ADMIN DASHBOARD -->
+    <div class="adminBox" id="adminBox">
+        <h3>👨‍💼 Admin Dashboard</h3>
+
+        <div class="stats">
+            <div class="card">
+                <h3 id="count">0</h3>
+                <p>Avis</p>
+            </div>
+
+            <div class="card">
+                <h3 id="avg">0</h3>
+                <p>Moyenne</p>
+            </div>
+
+            <div class="card">
+                <h3 id="max">0</h3>
+                <p>Max ⭐</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
 let rating = 0;
 let reviews = JSON.parse(localStorage.getItem("reviews")) || [];
 
-// ⭐ stars
+/* ⭐ stars */
 document.querySelectorAll("#stars span").forEach(star => {
     star.addEventListener("click", function () {
         rating = this.getAttribute("data-value");
@@ -121,32 +159,12 @@ document.querySelectorAll("#stars span").forEach(star => {
     });
 });
 
-// 📊 display reviews
-function displayReviews() {
-    let container = document.getElementById("reviews");
-    container.innerHTML = "";
-
-    let total = 0;
-
-    reviews.forEach(r => {
-        let div = document.createElement("div");
-        div.className = "review";
-        div.innerHTML = "⭐".repeat(r.rating) + "<br>" + r.comment;
-        container.appendChild(div);
-
-        total += r.rating;
-    });
-
-    let avg = reviews.length ? (total / reviews.length).toFixed(1) : 0;
-    document.getElementById("average").innerText = avg;
-}
-
-// ➕ add review
+/* add review */
 function addReview() {
     let comment = document.getElementById("comment").value;
 
     if (rating == 0 || comment === "") {
-        alert("Remplis tout !");
+        alert("Remplir tout !");
         return;
     }
 
@@ -161,11 +179,48 @@ function addReview() {
     rating = 0;
     document.querySelectorAll("#stars span").forEach(s => s.classList.remove("active"));
 
-    displayReviews();
+    display();
 }
 
-// init
-window.onload = displayReviews;
+/* display reviews + stats */
+function display() {
+    let box = document.getElementById("reviews");
+    box.innerHTML = "";
+
+    let total = 0;
+    let max = 0;
+
+    reviews.forEach(r => {
+        let div = document.createElement("div");
+        div.className = "review";
+        div.innerHTML = "⭐".repeat(r.rating) + "<br>" + r.comment;
+        box.appendChild(div);
+
+        total += r.rating;
+        if (r.rating > max) max = r.rating;
+    });
+
+    let avg = reviews.length ? (total / reviews.length).toFixed(1) : 0;
+
+    document.getElementById("count").innerText = reviews.length;
+    document.getElementById("avg").innerText = avg;
+    document.getElementById("max").innerText = max;
+}
+
+/* login admin */
+function login() {
+    let pass = document.getElementById("pass").value;
+
+    if (pass === "admin123") {
+        document.getElementById("adminBox").style.display = "block";
+        document.getElementById("login").style.display = "none";
+    } else {
+        alert("Mot de passe incorrect !");
+    }
+}
+
+/* init */
+window.onload = display;
 </script>
 
 </body>
